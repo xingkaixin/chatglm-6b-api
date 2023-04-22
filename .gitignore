@@ -1,0 +1,3 @@
+poetry.lock
+config/config.yaml
+__pycache__
