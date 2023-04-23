@@ -14,7 +14,7 @@ async def list_models():
         "text-embedding-ada-002",
     ]
     models = [
-        schemas.Response.Models.Model(id=model_name, root=model_name)
+        schemas.Response.Model(id=model_name, root=model_name)
         for model_name in models_name
     ]
-    return schemas.Response.Models.Models(data=models)
+    return schemas.Response.Models(data=models)

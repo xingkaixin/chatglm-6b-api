@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from ..message import Message
+from .chat_completion import Message
 
 
 class LLMInput(BaseModel):

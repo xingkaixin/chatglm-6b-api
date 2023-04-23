@@ -1,4 +1,5 @@
 import json
+from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sse_starlette.sse import EventSourceResponse
@@ -14,7 +15,7 @@ async def create_chat_completions(
     *,
     tokenizer=Depends(deps.get_tokenizer),
     model=Depends(deps.get_llm_model),
-    body: schemas.LLMInput,
+    body: schemas.Request.LLMInput,
     request: Request,
 ):
     question = body.messages[-1]
@@ -55,9 +56,19 @@ async def create_chat_completions(
                 sends = len(response)
                 if first:
                     first = False
-                    yield json.dumps(stream_response_start(), ensure_ascii=False)
-                yield json.dumps(stream_response(ret), ensure_ascii=False)
-            yield json.dumps(stream_response_stop(), ensure_ascii=False)
+                    # sse start
+                    yield json.dumps(
+                        sse_data(delta_data={"role": "assistant"}),
+                        ensure_ascii=False,
+                    )
+                # sse response
+                yield json.dumps(
+                    sse_data(delta_data={"content": ret}), ensure_ascii=False
+                )
+            # sse stop
+            yield json.dumps(
+                sse_data(delta_data={}, finish_reason="stop"), ensure_ascii=False
+            )
             yield "[DONE]"
 
         return EventSourceResponse(eval_chatglm(), ping=10000)
@@ -70,29 +81,19 @@ async def create_chat_completions(
             top_p=body.top_p,
             max_length=body.max_tokens,
         )
-        return not_stream_response(response)
+        return data(response)
 
 
-def not_stream_response(
+def data(
     response: str,
-) -> schemas.Response.ChatCompletion.ChatCompletion:
-    message = schemas.Response.ChatCompletion.Message(content=response)
-    choice = schemas.Response.ChatCompletion.Choice(message=message)
-    return schemas.Response.ChatCompletion.ChatCompletion(choices=[choice])
+) -> schemas.Response.ChatCompletion:
+    message = schemas.Response.Message(content=response)
+    choice = schemas.Response.Choice(message=message)
+    return schemas.Response.ChatCompletion(choices=[choice])
 
 
-def stream_response(content: str):
-    message = schemas.Response.ChatCompletion.DeltaChoice(delta={"content": content})
-    return schemas.Response.ChatCompletion.DeltaChatCompletion(choices=[message]).dict()
-
-
-def stream_response_start():
-    message = schemas.Response.ChatCompletion.DeltaChoice(delta={"role": "assistant"})
-    return schemas.Response.ChatCompletion.DeltaChatCompletion(choices=[message]).dict()
-
-
-def stream_response_stop():
-    message = schemas.Response.ChatCompletion.DeltaChoice(
-        delta={}, finish_reason="stop"
+def sse_data(delta_data: Dict[str, str], finish_reason: str = None) -> Dict[str, Any]:
+    message = schemas.Response.DeltaChoice(
+        delta=delta_data, finish_reason=finish_reason
     )
-    return schemas.Response.ChatCompletion.DeltaChatCompletion(choices=[message]).dict()
+    return schemas.Response.DeltaChatCompletion(choices=[message]).dict()
