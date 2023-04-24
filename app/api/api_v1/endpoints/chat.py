@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sse_starlette.sse import EventSourceResponse
@@ -17,6 +17,7 @@ async def create_chat_completions(
     model=Depends(deps.get_llm_model),
     body: schemas.Request.LLMInput,
     request: Request,
+    valid_user: bool = Depends(deps.is_valid_user)
 ):
     question = body.messages[-1]
     if question.role == "user":
@@ -35,8 +36,6 @@ async def create_chat_completions(
             assistant_answer = message.content
             history.append((user_question, assistant_answer))
 
-    print(f"{question=} {history=}")
-
     if body.stream:
 
         async def eval_chatglm():
@@ -53,22 +52,17 @@ async def create_chat_completions(
                 if await request.is_disconnected():
                     return
                 ret = response[sends:]
+                if "\uFFFD" == ret[-1:]:
+                    continue
                 sends = len(response)
                 if first:
                     first = False
                     # sse start
-                    yield json.dumps(
-                        sse_data(delta_data={"role": "assistant"}),
-                        ensure_ascii=False,
-                    )
+                    yield sse_data(delta_data={"role": "assistant"})
                 # sse response
-                yield json.dumps(
-                    sse_data(delta_data={"content": ret}), ensure_ascii=False
-                )
+                yield sse_data(delta_data={"content": ret})
             # sse stop
-            yield json.dumps(
-                sse_data(delta_data={}, finish_reason="stop"), ensure_ascii=False
-            )
+            yield sse_data(delta_data={}, finish_reason="stop")
             yield "[DONE]"
 
         return EventSourceResponse(eval_chatglm(), ping=10000)
@@ -92,8 +86,12 @@ def data(
     return schemas.Response.ChatCompletion(choices=[choice])
 
 
-def sse_data(delta_data: Dict[str, str], finish_reason: str = None) -> Dict[str, Any]:
+def sse_data(
+    delta_data: Dict[str, str], finish_reason: str = None
+) -> Union[str, bytes]:
     message = schemas.Response.DeltaChoice(
         delta=delta_data, finish_reason=finish_reason
     )
-    return schemas.Response.DeltaChatCompletion(choices=[message]).dict()
+    return schemas.Response.DeltaChatCompletion(choices=[message]).json(
+        ensure_ascii=False
+    )

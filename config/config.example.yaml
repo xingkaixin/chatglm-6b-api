@@ -1,5 +1,9 @@
 models:
   llm:
-    model_path: YOUR_LLM_MODEL_PATH
+    model_path: "YOUR_LLM_MODEL_PATH"
   embeddings:
-    model_path: YOUR_EMBEDDING_MODEL_PATH
+    model_path: "YOUR_EMBEDDING_MODEL_PATH"
+token:
+  - "YOUR_TOKEN"
+  - "YOUR_TOKEN"
+  - "YOUR_TOKEN"

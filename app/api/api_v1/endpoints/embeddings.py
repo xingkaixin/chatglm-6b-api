@@ -8,7 +8,10 @@ router = APIRouter()
 
 @router.post("/", status_code=status.HTTP_200_OK)
 async def create_embeddings(
-    *, model=Depends(deps.get_embeddings_model), body: schemas.Request.EmbeddingsInput
+    *,
+    model=Depends(deps.get_embeddings_model),
+    body: schemas.Request.EmbeddingsInput,
+    valid_user: bool = Depends(deps.is_valid_user)
 ):
     embeddings = model.encode(body.input)
     embeddings_data = schemas.Response.EmbeddingData(embedding=embeddings.tolist())

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import yaml
 from pydantic import BaseSettings
@@ -28,6 +28,7 @@ class ModelConfig(BaseSettings):
 
 class Config(BaseSettings):
     models: ModelConfig
+    token: List[str]
 
     class Config:
         yaml_file = Path("config").resolve().joinpath("config.yaml")
@@ -52,3 +53,4 @@ config = Config()
 
 llm_model = config.models.llm.model_path
 embedding_model = config.models.embeddings.model_path
+token = config.token
