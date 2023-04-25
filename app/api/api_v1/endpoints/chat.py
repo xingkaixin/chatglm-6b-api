@@ -36,6 +36,14 @@ async def create_chat_completions(
             assistant_answer = message.content
             history.append((user_question, assistant_answer))
 
+    # fix ValueError(f"`temperature` has to be a strictly positive float, but is {temperature}")
+    # transformers code set temperature > 0 Error
+       ### def __init__(self, temperature: float):
+        #if not isinstance(temperature, float) or not (temperature > 0):
+            ###raise ValueError(f"`temperature` has to be a strictly positive float, but is {temperature}")
+    if body.temperature == 0.0:
+        body.temperature = 0.000001
+
     if body.stream:
 
         async def eval_chatglm():
