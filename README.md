@@ -1,10 +1,27 @@
 # ChatGLM-6B API
 
+## ChatBot-UI to chat.
+
+## CPU&GPU
+
+
+## download model
+1.llm
+```bash
+git clone https://huggingface.co/THUDM/chatglm-6b-int4
+```
+2. text2vec
+```bash
+git clone https://huggingface.co/GanymedeNil/text2vec-large-chinese
+```
+
 ## run prod server
 Running on port 6006, for the convenience of deployment on [audodl](https://www.autodl.com/).
 ```bash
 gunicorn -c gunicorn.conf.py main:app
 ```
+
+
 
 
 ## 实现的接口
