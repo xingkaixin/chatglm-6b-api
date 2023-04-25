@@ -1,5 +1,11 @@
 # ChatGLM-6B API
 
+## run prod server
+Running on port 6006, for the convenience of deployment on [audodl](https://www.autodl.com/).
+```bash
+gunicorn -c gunicorn.conf.py main:app
+```
+
 
 ## 实现的接口
 ### List models
