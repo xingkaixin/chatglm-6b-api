@@ -1,9 +1,11 @@
 # ChatGLM-6B API
 
-## ChatBot-UI to chat.
-
+## chatbot-ui to chat.
+[chatbot-ui](https://github.com/mckaywrigley/chatbot-ui)
+![https://raw.githubusercontent.com/xingkaixin/chatglm-6b-api/main/doc/chat.png]
 ## CPU&GPU
-
+![https://raw.githubusercontent.com/xingkaixin/chatglm-6b-api/main/doc/cpu.png]
+![https://raw.githubusercontent.com/xingkaixin/chatglm-6b-api/main/doc/gpu.png]
 
 ## download model
 1.llm
